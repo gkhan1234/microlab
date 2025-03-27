@@ -1,114 +1,171 @@
-# ESP32 Environmental Monitoring System
+# ESP32 Environmental Monitoring Dashboard
 
-This project implements an environmental monitoring system using an ESP32 microcontroller. It reads data from multiple sensors, formats it as JSON, and sends it to a Firebase Realtime Database. Optionally, it can display the readings on an OLED display.
+This Streamlit application visualizes environmental monitoring data from ESP32 devices stored in a Firebase Realtime Database. It provides real-time data display, time-series charts, statistical analysis, and data export functionality.
 
 ## Features
 
-- WiFi connectivity with configurable credentials
-- Temperature and humidity monitoring using DHT11 sensor
-- Light level monitoring using LDR (Light Dependent Resistor)
-- Soil moisture monitoring
-- JSON data formatting with device ID and timestamp
-- Firebase Realtime Database integration
-- Optional OLED display support
-- Error handling for sensor failures and WiFi disconnections
-- Data caching when WiFi is unavailable
+- Authentication and connection to Firebase Realtime Database
+- Device selector to choose which environmental monitor to display
+- Time range selector (Last Hour, Last Day, Last Week, Last Month)
+- Real-time data display showing current temperature, humidity, light, and soil moisture readings
+- Time-series charts for each environmental parameter using Plotly
+- Statistical analysis section showing min, max, average, and trends
+- Data export functionality to download readings as CSV
+- Sample data generator for testing when no real data is available
+- Responsive design that works on desktop and mobile browsers
+- Proper error handling for database connection issues
 
-## Hardware Requirements
+## Prerequisites
 
-- ESP32 development board
-- DHT11 temperature and humidity sensor
-- LDR (Light Dependent Resistor) with voltage divider circuit
-- Soil moisture sensor
-- Optional: SSD1306 OLED display (128x64)
+- Python 3.8 or higher
+- Firebase Realtime Database (set up with your ESP32 environmental monitoring system)
+- GitHub account (for Streamlit Cloud deployment)
+- Streamlit Cloud account (free tier available)
 
-## Wiring Diagram
+## Deployment Options
 
-Connect the components to the ESP32 as follows:
+You have two options for running this dashboard:
 
-| Component | ESP32 Pin |
-|-----------|-----------|
-| DHT11 Data | GPIO 4 |
-| LDR Analog Output | GPIO 36 |
-| Soil Moisture Sensor Analog Output | GPIO 39 |
-| OLED Display SDA (optional) | GPIO 21 |
-| OLED Display SCL (optional) | GPIO 22 |
+### Option 1: Local Deployment
 
-### LDR Voltage Divider Circuit
+1. Clone this repository or download the files
+2. Install the required packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set up Firebase credentials (see Firebase Setup section below)
+4. Run the dashboard:
+   ```bash
+   streamlit run dashboard.py
+   ```
+   The dashboard will open in your default web browser at http://localhost:8501
 
-For the LDR, create a voltage divider circuit:
-1. Connect one leg of the LDR to 3.3V
-2. Connect the other leg to a junction with a 10kΩ resistor
-3. Connect the other end of the resistor to GND
-4. Connect the junction between the LDR and resistor to GPIO 36
+### Option 2: Streamlit Cloud Deployment (Recommended)
 
-## Software Setup
+Deploy your dashboard to Streamlit Cloud for free, making it accessible from anywhere:
 
-1. Install MicroPython on your ESP32 board
-2. Configure the `config.py` file with your WiFi credentials and Firebase details
-3. Upload both `main.py` and `config.py` to your ESP32
-4. Reset the ESP32 to start the program
+1. Create a GitHub repository and push your dashboard code to it
+2. Sign up for a free Streamlit Cloud account at https://streamlit.io/cloud
+3. Connect your GitHub repository to Streamlit Cloud
+4. Set up your Firebase credentials as secrets (see Streamlit Cloud Setup section below)
+5. Deploy your dashboard with one click
 
-### Firebase Setup
+## Firebase Setup
 
-1. Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
-2. Set up a Realtime Database
-3. Get your Firebase URL and authentication secret
-4. Update the `config.py` file with these details
+### Option 1: Anonymous Access (Development/Testing)
 
-## Configuration
+1. Go to your Firebase console: https://console.firebase.google.com/
+2. Select your project (e.g., microlab-data)
+3. Go to "Realtime Database" in the left sidebar
+4. Click on "Rules" tab
+5. For development/testing purposes, set rules to allow anonymous access:
+   ```json
+   {
+     "rules": {
+       ".read": true,
+       ".write": true
+     }
+   }
+   ```
+6. Click "Publish" to save these rules
 
-Edit the `config.py` file to customize the system:
+### Option 2: Authentication with Service Account
 
-```python
-# WiFi Configuration
-WIFI_SSID = "YourWiFiSSID"
-WIFI_PASSWORD = "YourWiFiPassword"
+1. Go to your Firebase console: https://console.firebase.google.com/
+2. Select your project
+3. Go to Project Settings (gear icon) > Service accounts
+4. Click "Generate new private key"
+5. Save the JSON file (you'll need its contents for Streamlit Cloud secrets)
 
-# Device Configuration
-DEVICE_ID = "esp32_env_monitor_01"
-READING_INTERVAL = 60  # seconds
+## Streamlit Cloud Setup
 
-# Firebase Configuration
-FIREBASE_URL = "https://your-project-id.firebaseio.com/"
-FIREBASE_SECRET = "your-firebase-secret"
+### Step 1: Create a GitHub Repository
+
+1. Create a new repository on GitHub
+2. Upload the following files to your repository:
+   - dashboard.py
+   - requirements.txt
+   - .streamlit/config.toml (create this directory and file)
+
+### Step 2: Create a Streamlit Cloud Account
+
+1. Go to https://streamlit.io/cloud
+2. Sign up for a free account (you can use your GitHub account to sign in)
+
+### Step 3: Deploy Your Dashboard
+
+1. From the Streamlit Cloud dashboard, click "New app"
+2. Connect to your GitHub repository
+3. Set the main file path to "dashboard.py"
+4. Click "Deploy"
+
+### Step 4: Set Up Secrets for Firebase
+
+1. In your deployed app, click the "Settings" menu (⋮)
+2. Select "Secrets"
+3. Add your Firebase credentials in the following format:
+
+```toml
+[firebase]
+type = "service_account"
+project_id = "your-project-id"
+private_key_id = "your-private-key-id"
+private_key = "-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
+client_email = "your-service-account-email"
+client_id = "your-client-id"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "your-cert-url"
+database_url = "https://your-project-id-default-rtdb.firebaseio.com/"
 ```
+
+Replace all values with those from your Firebase service account key file.
+
+## Demo Mode
+
+If no Firebase credentials are provided, the dashboard will run in demo mode with sample data. This is useful for testing the interface without a Firebase connection.
 
 ## Data Format
 
-The system sends data to Firebase in the following JSON format:
+The dashboard expects data in the Firebase Realtime Database to be structured as follows:
 
-```json
-{
-  "device_id": "esp32_env_monitor_01",
-  "timestamp": 1616876400,
-  "readings": {
-    "temperature": 25,
-    "humidity": 60,
-    "light_level": 75.5,
-    "soil_moisture": 42.3
-  }
-}
+```
+/readings
+  /device_id_1
+    /reading_1
+      timestamp: 1616876400
+      readings:
+        temperature: 25
+        humidity: 60
+        light_level: 75.5
+        soil_moisture: 42.3
+    /reading_2
+      ...
+  /device_id_2
+    ...
 ```
 
-## Educational Purpose
+## Customization
 
-This code is structured for educational purposes with:
-- Clear function organization
-- Comprehensive error handling
-- Detailed comments explaining each component
-- Modular design for easy understanding
+You can customize the dashboard by modifying the following:
+
+- Update the Firebase URL in the `initialize_firebase()` function
+- Adjust the time ranges in the `get_time_range_timestamps()` function
+- Modify the chart colors and styles in the rendering functions
+- Add additional environmental parameters by updating the data processing functions
 
 ## Troubleshooting
 
-- If sensors aren't reading correctly, check your wiring and pin configurations
-- For WiFi connection issues, verify your credentials in `config.py`
-- If the OLED display isn't working, ensure the I2C address is correct
-- For Firebase connection problems, check your URL and authentication details
+- If you encounter connection issues, check your Firebase credentials and database rules
+- For visualization problems, ensure your data format matches the expected structure
+- If running in demo mode, verify that the sample data generator is producing appropriate values
+- For Streamlit Cloud issues, check the deployment logs and verify your secrets are correctly set
+
+## Educational Use
+
+This dashboard is designed for educational purposes, with clear labels and explanations suitable for classroom use. It focuses on making environmental data accessible and meaningful.
 
 ## License
 
 This project is provided for educational purposes. Feel free to modify and use it for your own projects.
-# stmicrolab
-# stmicrolab
-# stmicrolab
