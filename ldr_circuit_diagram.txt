@@ -1,0 +1,85 @@
+LDR (Light Dependent Resistor) Voltage Divider Circuit
+=================================================
+
+Circuit Diagram:
+--------------
+
+    3.3V (ESP32)
+       |
+       |
+       |
+       |
+      +++
+      | |
+      | |  LDR (Light Dependent Resistor)
+      | |  (Resistance decreases with increasing light)
+      | |
+      +++
+       |
+       |
+       +----------+
+       |          |
+       |          |
+       |          |
+       |          |
+       |          +-------> To ESP32 GPIO 36 (ADC Input)
+       |
+      +++
+      | |
+      | |  10kΩ Resistor (Fixed)
+      | |
+      | |
+      +++
+       |
+       |
+       |
+       |
+      GND (ESP32)
+
+
+How It Works:
+-----------
+1. The LDR and fixed resistor form a voltage divider
+2. As light intensity increases, LDR resistance decreases
+3. This causes the voltage at the junction point to decrease
+4. The ESP32 ADC reads this voltage and converts it to a digital value
+5. The code converts this digital value to a light level percentage
+
+Calculation:
+-----------
+Voltage at junction = 3.3V × (10kΩ / (LDR resistance + 10kΩ))
+
+- In darkness: LDR resistance is high (e.g., 100kΩ)
+  Junction voltage ≈ 3.3V × (10kΩ / 110kΩ) ≈ 0.3V
+
+- In bright light: LDR resistance is low (e.g., 1kΩ)
+  Junction voltage ≈ 3.3V × (10kΩ / 11kΩ) ≈ 3.0V
+
+Component Selection:
+------------------
+- LDR: Any standard photoresistor/LDR
+- Resistor: 10kΩ is recommended, but you can adjust based on your LDR's characteristics
+  - Use a smaller resistor (e.g., 4.7kΩ) for better sensitivity in low light
+  - Use a larger resistor (e.g., 22kΩ) for better sensitivity in bright light
+
+Calibration:
+-----------
+The code uses these values for calibration:
+```
+LDR_MIN = 0      # Minimum ADC value (darkest)
+LDR_MAX = 4095   # Maximum ADC value (brightest)
+```
+
+You may need to adjust these values based on your specific environment and LDR characteristics:
+
+1. To calibrate:
+   - Cover the LDR completely (darkness) and note the ADC reading
+   - Expose the LDR to the brightest light in your environment and note the reading
+   - Update the LDR_MIN and LDR_MAX values in config.py accordingly
+
+Tips:
+----
+- Keep wires as short as possible to reduce noise
+- Consider adding a small capacitor (0.1μF) between the junction and ground to filter noise
+- For outdoor use, ensure the LDR is protected from moisture
+- The ESP32's ADC is non-linear; for precise measurements, consider implementing a calibration curve

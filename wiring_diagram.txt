@@ -1,0 +1,112 @@
+ESP32 Environmental Monitoring System - Wiring Diagram
+==================================================
+
++---------------------+
+|                     |
+|      ESP32          |
+|                     |
++---------------------+
+    |   |   |   |   |
+    |   |   |   |   |
+    |   |   |   |   |
+    |   |   |   |   |
+    |   |   |   |   |
+    v   v   v   v   v
+   3V3 GND  4  36  39  21  22
+    |   |   |   |   |   |   |
+    |   |   |   |   |   |   |
+    |   |   |   |   |   |   |
+    |   |   |   |   |   |   +----> SCL (OLED Display)
+    |   |   |   |   |   |
+    |   |   |   |   |   +---------> SDA (OLED Display)
+    |   |   |   |   |
+    |   |   |   |   +-------------> Soil Moisture Sensor (Analog Output)
+    |   |   |   |
+    |   |   |   +-----------------> LDR Voltage Divider (Junction Point)
+    |   |   |
+    |   |   +---------------------> DHT11 Data Pin
+    |   |
+    |   +-------------------------> Common Ground
+    |
+    +-----------------------------> 3.3V Power Supply
+
+
+DHT11 Temperature & Humidity Sensor
+===================================
+    +-------+
+    |       |
+    | DHT11 |
+    |       |
+    +-------+
+       | | |
+       | | |
+       | | +----> GND ---------> ESP32 GND
+       | |
+       | +------> DATA --------> ESP32 GPIO 4
+       |
+       +--------> VCC ---------> ESP32 3.3V
+
+
+LDR Light Sensor with Voltage Divider
+=====================================
+    3.3V (ESP32)
+       |
+       |
+      +++
+      | | LDR (Light Dependent Resistor)
+      +++
+       |
+       +--------> Junction Point -----> ESP32 GPIO 36 (ADC)
+       |
+      +++
+      | | 10kΩ Resistor
+      +++
+       |
+       |
+      GND (ESP32)
+
+
+Soil Moisture Sensor
+===================
+    +----------------+
+    |                |
+    | Soil Moisture  |
+    | Sensor         |
+    |                |
+    +----------------+
+       |    |    |
+       |    |    |
+       |    |    +----> AO (Analog Output) ----> ESP32 GPIO 39 (ADC)
+       |    |
+       |    +---------> GND -----------------> ESP32 GND
+       |
+       +-------------> VCC -----------------> ESP32 3.3V
+
+
+OLED Display (Optional, I2C Connection)
+======================================
+    +----------------+
+    |                |
+    | OLED Display   |
+    | 128x64         |
+    |                |
+    +----------------+
+       |    |    |    |
+       |    |    |    |
+       |    |    |    +----> SCL --------> ESP32 GPIO 22
+       |    |    |
+       |    |    +---------> SDA --------> ESP32 GPIO 21
+       |    |
+       |    +-------------> GND --------> ESP32 GND
+       |
+       +-----------------> VCC --------> ESP32 3.3V
+
+
+Notes:
+======
+1. All GND connections can be connected to any GND pin on the ESP32.
+2. All 3.3V connections can be connected to any 3.3V pin on the ESP32.
+3. The LDR voltage divider creates an analog voltage that varies with light intensity.
+4. The soil moisture sensor provides an analog output that varies with soil moisture.
+5. The DHT11 sensor uses a digital communication protocol on a single data pin.
+6. The OLED display uses I2C communication protocol with SDA and SCL pins.

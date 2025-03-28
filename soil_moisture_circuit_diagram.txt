@@ -1,0 +1,114 @@
+Soil Moisture Sensor Connection and Operation
+========================================
+
+Circuit Diagram:
+--------------
+
+                                  ESP32
+                                    |
+                                    |
+    +-------------------------+     |
+    |                         |     |
+    |   Soil Moisture Sensor  |     |
+    |   +---------------+     |     |
+    |   |               |     |     |
+    |   |     Module    |     |     |
+    |   |               |     |     |
+    |   +---------------+     |     |
+    |     |     |     |       |     |
+    |     |     |     |       |     |
+    |    VCC   GND    AO      |     |
+    |     |     |     |       |     |
+    +-----|-----|-----|-------+     |
+          |     |     |             |
+          |     |     |             |
+          |     |     +-------------+---> GPIO 39 (ADC Input)
+          |     |                   |
+          |     +-------------------+---> GND
+          |                         |
+          +-------------------------+---> 3.3V
+
+
+Sensor Probes:
+------------
+    |     |
+    |     |
+   [|]   [|]  <- Metal probes that go into soil
+    |     |
+    |     |
+    |     |
+    +-----+
+        |
+        |
+        v
+    To Sensor Module
+
+
+How It Works:
+-----------
+1. The soil moisture sensor has two probes that act as a variable resistor
+2. When soil is dry, resistance between probes is high
+3. When soil is wet, resistance between probes is low
+4. The sensor module converts this resistance to a voltage
+5. The ESP32 ADC reads this voltage and converts it to a digital value
+6. The code converts this digital value to a moisture percentage
+
+Typical Sensor Module:
+--------------------
+Most soil moisture sensors have a module with:
+- Power indicator LED
+- Comparator circuit (for digital output, not used in this project)
+- Analog output (AO) that provides a voltage proportional to soil moisture
+
+Reading Interpretation:
+---------------------
+The code uses these values for calibration:
+```
+SOIL_MIN = 0      # Minimum ADC value (driest)
+SOIL_MAX = 4095   # Maximum ADC value (wettest)
+```
+
+For most soil moisture sensors:
+- Higher ADC reading = Drier soil
+- Lower ADC reading = Wetter soil
+
+However, our code inverts this to provide a more intuitive percentage:
+```python
+moisture_percent = 100 - ((raw_value - config.SOIL_MIN) * 100) / (config.SOIL_MAX - config.SOIL_MIN)
+```
+
+So in our system:
+- 0% = Completely dry
+- 100% = Completely wet
+
+Calibration:
+-----------
+To calibrate your sensor:
+1. Place the sensor in completely dry soil (or air) and note the ADC reading
+2. Place the sensor in water and note the ADC reading
+3. Update the SOIL_MIN and SOIL_MAX values in config.py accordingly
+
+Important Notes:
+--------------
+1. Power Considerations:
+   - Most soil moisture sensors work best with 3.3V-5V
+   - The ESP32 can provide 3.3V which is sufficient
+   - For long-term use, consider powering the sensor only when taking readings to:
+     * Extend sensor life (reduce corrosion)
+     * Save power
+     * Reduce electrolysis effects
+
+2. Sensor Placement:
+   - Insert probes to appropriate depth for the plant's root system
+   - Ensure good contact with soil
+   - Avoid placing near metal objects or pipes
+
+3. Maintenance:
+   - Clean probes periodically to remove mineral buildup
+   - Some corrosion is normal over time
+   - Consider coating probes with a corrosion-resistant material for long-term use
+
+4. Accuracy:
+   - Soil moisture sensors provide relative readings, not absolute moisture content
+   - Readings can be affected by soil type, temperature, and mineral content
+   - For scientific applications, consider calibrating for your specific soil type

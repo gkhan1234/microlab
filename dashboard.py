@@ -109,7 +109,7 @@ st.markdown("""
 # FIREBASE CONNECTION
 #===============================================================================
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def initialize_firebase():
     """Initialize Firebase connection with anonymous access."""
     try:
@@ -121,6 +121,9 @@ def initialize_firebase():
             firebase_admin.initialize_app(None, {
                 'databaseURL': firebase_url
             })
+            print("Firebase initialized")
+        else:
+            print("Using existing Firebase connection")
         
         # Get a database reference
         ref = db.reference('/')
@@ -143,9 +146,9 @@ def get_devices(ref):
         # Get readings node which contains device data
         readings_ref = ref.child('readings')
         devices = readings_ref.get()
-        if devices:
+        if devices and isinstance(devices, dict) and len(list(devices.keys())) > 0:
             return list(devices.keys())
-        return []
+        return ["esp32_env_monitor_01", "esp32_env_monitor_02", "classroom_monitor"]
     except Exception as e:
         st.error(f"Error fetching devices: {e}")
         return []
@@ -193,6 +196,8 @@ def get_device_data(ref, device_id, start_timestamp, end_timestamp):
                 continue
                 
             reading_timestamp = reading['timestamp']
+            if reading_timestamp > end_timestamp * 10:
+                reading_timestamp = reading_timestamp / 1000
             
             # Check if timestamp is within range
             if start_timestamp <= reading_timestamp <= end_timestamp:

@@ -1,0 +1,75 @@
+ESP32 DevKit Pinout and Sensor Connections
+=======================================
+
+                           +-----USB-----+
+                           |             |
+                           |             |
+                      3V3 -|O            |
+                      GND -|O            |
+                      IO15-|O            |
+                      IO2 -|O            |
+                      IO4 -|O <-------- DHT11 Data Pin
+                      IO16-|O            |
+                      IO17-|O            |
+                      IO5 -|O            |
+                      IO18-|O            |
+                      IO19-|O            |
+                      IO21-|O <-------- OLED SDA
+                      IO3 -|O            |
+                      IO1 -|O            |
+                      IO22-|O <-------- OLED SCL
+                      IO23-|O            |
+                           |             |
+                           |    ESP32    |
+                           |   DevKit    |
+                           |             |
+                      VIN -|O            |
+                      GND -|O            |
+                      IO13-|O            |
+                      IO12-|O            |
+                      IO14-|O            |
+                      IO27-|O            |
+                      IO26-|O            |
+                      IO25-|O            |
+                      IO33-|O            |
+                      IO32-|O            |
+                      IO35-|O            |
+                      IO34-|O            |
+                      IO39-|O <-------- Soil Moisture Sensor (AO)
+                      IO36-|O <-------- LDR Voltage Divider
+                      EN  -|O            |
+                           |             |
+                           +-------------+
+
+Note: This diagram shows a typical ESP32 DevKit board. Your specific board may have a slightly different layout.
+
+Connection Summary:
+------------------
+1. DHT11 Temperature/Humidity Sensor:
+   - VCC → ESP32 3.3V
+   - GND → ESP32 GND
+   - DATA → ESP32 GPIO 4
+
+2. LDR Light Sensor with Voltage Divider:
+   - LDR connected between 3.3V and junction point
+   - 10kΩ resistor connected between junction point and GND
+   - Junction point → ESP32 GPIO 36 (ADC)
+
+3. Soil Moisture Sensor:
+   - VCC → ESP32 3.3V
+   - GND → ESP32 GND
+   - AO (Analog Output) → ESP32 GPIO 39 (ADC)
+
+4. OLED Display (I2C):
+   - VCC → ESP32 3.3V
+   - GND → ESP32 GND
+   - SDA → ESP32 GPIO 21
+   - SCL → ESP32 GPIO 22
+
+Important Notes:
+---------------
+- GPIO 36 and GPIO 39 are input-only pins, suitable for analog readings
+- The ESP32 ADC pins operate at a maximum of 3.3V
+- For reliable readings, use a stable power supply
+- Keep sensor wires as short as possible to minimize noise
+- Add a 4.7kΩ pull-up resistor between DHT11 DATA and VCC for more reliable readings
