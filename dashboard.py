@@ -111,36 +111,17 @@ st.markdown("""
 
 @st.cache_resource
 def initialize_firebase():
-    """Initialize Firebase connection with error handling."""
+    """Initialize Firebase connection with anonymous access."""
     try:
-        # Check if the app is already initialized
+        # Use a direct URL to your Firebase database
+        firebase_url = "https://microlab-data-default-rtdb.firebaseio.com/"
+        
+        # Initialize with anonymous access (no credentials needed)
         if not firebase_admin._apps:
-            # Path to your Firebase credentials file
-            # For deployment, use st.secrets for sensitive information
-            if 'FIREBASE_CREDENTIALS' in st.secrets:
-                # Use secrets for deployed app
-                cred_dict = json.loads(st.secrets["FIREBASE_CREDENTIALS"])
-                cred = credentials.Certificate(cred_dict)
-                firebase_url = st.secrets["FIREBASE_URL"]
-            else:
-                # Local development - look for credentials file
-                cred_path = "firebase_credentials.json"
-                if os.path.exists(cred_path):
-                    cred = credentials.Certificate(cred_path)
-                    # Read URL from the same file
-                    with open(cred_path, 'r') as f:
-                        config = json.load(f)
-                        firebase_url = config.get("databaseURL", "https://microlab-data-default-rtdb.firebaseio.com/")
-                else:
-                    # Use anonymous authentication for demo purposes
-                    firebase_url = "https://microlab-data-default-rtdb.firebaseio.com/"
-                    return None, firebase_url, "demo"
-            
-            # Initialize the app
-            firebase_admin.initialize_app(cred, {
+            firebase_admin.initialize_app(None, {
                 'databaseURL': firebase_url
             })
-            
+        
         # Get a database reference
         ref = db.reference('/')
         return ref, firebase_url, "connected"
@@ -406,7 +387,7 @@ def render_sidebar(ref):
     time_range = st.sidebar.radio(
         "Select Time Range",
         ["Last Hour", "Last Day", "Last Week", "Last Month"],
-        index=1,  # Default to Last Day
+        index=0,  # Default to Last Hour
         help="Choose the time period for data visualization"
     )
     
@@ -416,7 +397,7 @@ def render_sidebar(ref):
     # Auto-refresh toggle
     auto_refresh = st.sidebar.checkbox(
         "Auto-refresh (30s)",
-        value=False,
+        value=True,  # Set to True by default
         help="Automatically refresh data every 30 seconds"
     )
     
